@@ -109,7 +109,7 @@ FROM personnel
 GROUP BY exp_level
 ORDER BY AVG(commute_min) ASC;
 
--- // -- filter after analying groups; use HAVING.
+-- // -- filter after analyzing groups; use HAVING.
 
 SELECT exp_level, AVG(salary) mean_salary
 FROM personnel
