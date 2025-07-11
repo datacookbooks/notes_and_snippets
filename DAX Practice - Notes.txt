@@ -1,0 +1,397 @@
+[DAX Practice - Notes]
+
+###--- Operators in DAX ---###
+
+Arithmetic: +, -, *, /, ^ (add, subtract, multiply, divide, exponentiate)
+Logical: &&, ||, IN (AND, OR, and IN)
+Comparison: =, ==, >, >=, <, <=, <> (equal, strict equal, less, less or equal, more, more or equal, not equal)
+Text Concatenate: &
+
+###--- Difference between a calculated column and a measure ---###
+
+We would use a calculated column to do calculations on a row level basis. We don't want the number of rows to collapse. We want each row to have a value.  
+
+Typically, we would use a measure when we want some kind of aggregation, like a sum or average, so the total number of rows is not preserved (it is collapsed). The advantage of measures it they don't create physical values in your table, and they do not increase the file size, unlike calculated columns. 
+
+###--- Adding a calculated column ---###
+
+We can click on the data view. Then, we click on our data table, and click "new column".
+We can also go to the report view, click on the modeling tab, and click on "new column" there. 
+We can also go to our data pane, click on the three dots near our table, and click on "new column" there.
+
+The formula might look like this, if PizzaSales is our table. 
+
+Revenue = PizzaSales[Sales] * PizzaSales[Price_USD]
+
+###--- adding a measure ---###
+
+It's best to add them from the report view. You won't see them in the data view.
+Click on the three dots next to the table, and click on new measure. 
+
+Here's an example that involves taking the sum using SUMX. SUMX is used when you want to do a calculation on each row, and then take the sum. The first argument is the table. 
+
+RevDiscounted = SUMX(PizzaSales, ( (PizzaSales[Sales] * PizzaSales[Price_USD]) * 0.15))
+
+###--- implicit measure vs explicit measure ---###
+
+When you drag a column into the report layout, Power BI automatically creates an aggregation measure that is an implicit measure. We see this in the visualization area, when we drag a column there it will automatically take the sum or average. 
+
+In contrast, if we enter a formula in the formula bar, we are creating an explicit measure. 
+
+###--- creating a table and a column of dates ---###
+
+Go to the modeling tab. Click on "new table". 
+One thing we can do is make a column that contains a range of dates.
+
+Table = CALENDAR("12/25/2022", "2/24/2023")
+
+You can also reference today:
+
+Table = CALENDAR("12/25/2022", Today())
+
+Also, CALENDARAUTO will create a column of dates covering at least 1 year, AND include all dates in our dataset.
+Make sure your dataset has columns with the correct type. 
+The output will have one or more full years worth of dates (1 day apart).
+
+Table = CALENDARAUTO()
+
+###--- the DATE function ---###
+
+This function results in a DATE value. You can use other columns to build it. 
+For example, we want a column that has a date with the same year and month as another column, but the day = 1.
+
+The arguments are Year, Month, Date. you can write these in manually, or reference columns, or both.
+
+Column = DATE(YEAR(PizzaSales[Date]), MONTH(PizzaSales[Date]), 1)
+
+Note that we are using YEAR and MONTH to extract the year and month from our Date column.
+The Date column must be formatted as a Date data type to work like this. 
+
+###--- DATEDIFF function ---###
+
+We can use this to measure the time between two dates. 
+The arguments are the start date, end date, and the interval (minute, hour, day, week month, quarter, year, etc)
+
+Column 2 = DATEDIFF(PizzaSales[Column], PizzaSales[Date], HOUR)
+
+Note, this function will round to the nearest integer. If something is 0.4 weeks apart, it will show 0.
+
+###--- DATEVALUE function ---###
+
+We use it to convert text information into a date. 
+This is useful if we have columns like Year, Month, and Day, and the types are not consistent. 
+We convert everything to text, using concatenation, and use the DATEVALUE function.
+We combine the parts of the date using a /, as shown below.
+
+NewDate = DATEVALUE(DateDemo[Month] & "/" & DateDemo[Day] & "/" & DateDemo[Year])
+
+###--- NOW and TODAY functions ---###
+
+This gives us the current date in time. 
+This is useful for having measures or columns that are dynamic, that change for each day we check them.
+
+NewColumn = NOW()
+
+TODAY() is similar but it just gives you the current date.
+
+###--- YEAR, MONTH, DAY functions ---###
+
+These allow you to extract a specific part of a date. 
+
+DayColumn = DAY(PizzaSales[Date])
+
+###--- EDATE function ---###
+
+This allows us to add or subtract a number of months to a given date. To subtract, use a negative number.
+
+Column = EDATE(DateDemo[NewDate], -2)
+
+###--- EOMONTH function ---###
+
+this returns the the date of the last day of the month. If you want the prior month, use -1 instead of 0.
+
+Column = EOMONTH(DateDemo[NewDate], 0)
+
+###--- get first day of month ---###
+
+What we do is subtract a month, get the end of that, and then add 1.
+
+Column = EOMONTH(DateDemo[NewDate], -1) + 1
+
+###--- NETWORKDAYS function ---###
+
+We use this to count the number of work days between two dates. 
+The first argument is the start date, next is the end date.
+The third argument is a numerical code that determines the convention for weekends.
+A code of 1 means weekends on Saturday and Sunday. There are other options. 
+The fourth argument is for holidays; you can reference a table that has a column of holiday dates. 
+
+Column = NETWORKDAYS("1/22/2021", PizzaSales[Date], 1, Holidays)
+
+###--- WEEKDAY function ---###
+
+We use this to figure out what day within the week a particular day is.
+The first argument is the column that has our date.
+The second argument is a code. If 1, it means Sunday is the first day of the week and has a value of 1. 
+
+Column = WEEKDAY(PizzaSales[Date], 1)
+
+###--- SUM, COUNT, AVERAGE, COUNTA functions ---###
+
+These are common aggregation functions. We use them typically by making a new measure.
+
+We can get the sum of a column very simply. 
+
+Measure = SUM(PizzaSales[Sales])
+
+To get the count of rows within a column, it is also simple.
+
+Measure = COUNT(PizzaSales[Sales])
+
+Getting the average (mean) is easy too. 
+
+Measure = AVERAGE(PizzaSales[Sales])
+
+We use COUNTA to count how many non-blank rows there are in a column. 
+
+Measure = COUNTA(PizzaSales[Sales])
+
+
+###--- Aggregate functions with x at the end: sumx, countx, countax, averagex, maxx, minx, productx ---###
+
+X stands for expression. These functions calculate some expression at the row level, and then aggregates it at the end. 
+
+Suppose on each row, we want to multiply Price_USD by the Sales. Then we want the sum. We would use SUMX.
+The first argument tells us the table we are working with. The second argument is the expression.
+
+Measure = SUMX(PizzaSales, PizzaSales[Price_USD] * PizzaSales[Sales])
+
+###--- DISTINCTCOUNT and DISTINCTCOUNTNOBLANK ---###
+
+We use these to count how many distinct values are in a column. The NOBLANK version insures a blank value isn't counted.
+
+Measure = DISTINCTCOUNTNOBLANK(PizzaSales[Pizza_Name])
+
+###--- DISTINCT ---###
+
+This returns a table. Each column contains all the unique values a given column has. It will consider blank to be unique.
+
+###--- logical functions ---###
+
+We use if to populate a column based on a condition. if something is true, column should show ABC, otherwise, XYZ.
+
+Column = IF(PizzaSales[Sales] > 100, "Top Seller", "Average Seller")
+
+We can use IFERROR to check if a column has an error in one of the rows. We specify what we want to display if that is the case.
+
+Column = IFERROR(PizzaSales[Sales], "Error Present")
+
+We can use AND to check if two conditions are both true. Output will be either True or False (boolean values).
+
+Column = AND(PizzaSales[Pizza_Name] = "Deluxe", PizzaSales[Category] = "Non-Veg")
+
+We can use OR to check if one or another logical condition is true. 
+
+Column = OR(PizzaSales[Pizza_Name] = "Deluxe", PizzaSales[Category] = "Non-Veg")
+
+We can use AND() or OR() within the IF() function. 
+
+Column = IF(AND(PizzaSales[Pizza_Name] = "Deluxe", PizzaSales[Category] = "Non-Veg"), "Special Pizza", "Boring Pizza")
+
+We can use && instead of AND so that we can check more than 2 conditions. We can also use this within the IF function. 
+
+Column = IF(PizzaSales[Pizza_Name] = "Deluxe" && PizzaSales[Category] = "Non-Veg" && PizzaSales[Sales] > 10, "cool", "uncool" )
+
+###--- SWITCH function ---###
+
+This allows us to populate a column based on the outcome of a variety of IF conditions. We can use && within the conditions.
+
+Column = 
+SWITCH(
+    TRUE,
+    PizzaSales[Sales] < 80, "Low Sales",
+    PizzaSales[Sales] > 80 && PizzaSales[Sales] < 130, "Medium Sales",
+    PizzaSales[Sales] > 130, "High Sales",
+    "Unknown")
+
+###--- text functions ---###
+
+If we want to convert row values to upper case, we use UPPER. For lower case, we would use LOWER. 
+
+Column = UPPER(PizzaSales[Category])
+
+If we want to concatenate two text columns, we can use CONCATENATE. But this only lets us combine 2 things. Less useful.
+
+Column = CONCATENATE(PizzaSales[Category], PizzaSales[Pizza_Name])
+
+It's more useful to use &, which allows us to concatenate more than 2 things. This helps us add spaces if we need them. 
+
+Column = PizzaSales[Category] & " " & PizzaSales[Pizza_Name]
+
+If we want the number of characters in each row of a column, we use LEN.
+
+Column = LEN(PizzaSales[Pizza_Name])
+
+If we want the 4 leftmost characters of row values, we can use LEFT. For rightmost, we would use RIGHT.
+
+Column = LEFT(PizzaSales[Pizza_Name], 4)
+
+For a specific substring, we use MID. We specify what character to start on (count starts at 1), and then how many more (going right).
+The code below starts at the second character, then takes the characters going right. For "George", it would return "eor". 
+
+Column = MID(PizzaSales[Pizza_Name], 2, 3)
+
+We can use REPLACE to replace a part of a string with something else. We give a starting position, and how many characters to the right.
+The code below alters 4 characters starting at position 2 (so characters from position 2 to and including position 6)
+
+Column = REPLACE(PizzaSales[Pizza_Name], 2, 4, "XYZ")
+
+It's more helpful to use SUBSTITUTE. It will find a particular string or character and swap it with something, regardless of position.
+This is case sensitive. We also tell it what instance to substitute. Usually we use the first (1), but we could pick another (2nd, etc).
+
+Column = SUBSTITUTE(PizzaSales[Pizza_Name], "e", "Z", 1)
+
+We can use SEARCH to see what position a substring occurs in the values of a column
+We specify the string of interest, the column we're searching, where we start our search (1 means start at first character),
+We also specify what value to display if it is not found (must be an integer). 
+
+Column = SEARCH("e", PizzaSales[Pizza_Name], 1, 0)
+
+###--- CALCULATE function ---###
+
+This allows us to do a calculation after applying a filter. 
+
+For example, suppose we want the sum of the Sales column for a certain value in the Category column.
+
+Measure = CALCULATE(SUM(PizzaSales[Sales]), PizzaSales[Category] = "Non-Veg") 
+
+You can have even more conditions by adding them with a comma. 
+
+Measure = CALCULATE(SUM(PizzaSales[Sales]), PizzaSales[Category] = "Non-Veg", PizzaSales[Sales] > 100) 
+
+You can have a condition that relates to an existing measure you made. That will require using FILTER. 
+Let's make a measure called MeasureCategory and it simply equals "Non-Veg".
+Note that in Filter, first we specify what our table is. 
+
+Measure = CALCULATE(SUM(PizzaSales[Sales]), FILTER(PizzaSales, PizzaSales[Sales] > 100 && PizzaSales[Category] = [MeasureCategory])) 
+
+###--- ALL ---###
+
+This is useful when we need an aggregated result, and we want it to be the same regardless of any filters we have in the report. 
+
+For example, I may want a measure that has the sum of all of my sales. 
+
+Measure = 
+CALCULATE(SUM(PizzaSales[Sales]), ALL())
+
+If instead, we want a measure that is the sum, but changes depending on filters we apply, we would not. use CALCULATE and ALL.
+
+Measure = 
+SUM(PizzaSales[Sales])
+
+###--- aggregation by group with CALCULATE and ALLEXCEPT ---###
+
+This is useful when we need an aggregated result (like sum) for each group of something, and we want it to not be affected by filters. 
+
+Measure = CALCULATE(
+    SUM(PizzaSales[Sales]),
+    ALLEXCEPT(PizzaSales, PizzaSales[Category])
+)
+
+ALLEXCEPT means the only context we keep is the context for Category. We ignore other filter contexts.
+
+###--- aggregation by group - get group sum as a fraction of overall sum 
+
+MeasureSalesFrac =
+DIVIDE(
+    CALCULATE(
+        SUM(PizzaSales[Sales]),
+        ALLEXCEPT(PizzaSales, PizzaSales[Category])
+    ),
+    CALCULATE(
+        SUM(PizzaSales[Sales]),
+        ALL(),
+    ),
+    0
+)
+
+We use ALL() in the denominator to ensure out grand total sum is not affected by any filters. 
+
+###--- aggregation by group, without CALCULATE ---###
+
+Suppose we want to see the sum of the Sales column for each group of the Category column. 
+We want to be able to see this, after filtering based on the Region column (North America, Europe, etc). 
+
+In this case, our measure would not use CALCULATE or ALLEXCEPT. We would create a more all-purpose measure, SalesSum, which is susceptible to filters. 
+
+SalesSum = SUM(PizzaSales[Sales])
+
+We would then pull this into a visual. The X-axis would be Category, the Y-axis would be the measure. And we would add a slicer that relates to the Region column. 
+
+###--- why use CALCULATE? ---###
+
+This is useful when we want to have an aggregated result that does not change based on certain filters we have. 
+This gives us more control over what is and is not affected by certain filters / slicers. 
+
+###--- using RELATED ---### 
+
+Suppose we have multiple tables in our data model, and they share a column column like index_col. We have connected them already. 
+
+If we want, we can add a column in Table 2 that references a column in Table 1.
+
+Column = IF(RELATED(Table1[SomeColumn]) = "Deluxe", 1, 0) 
+
+This applies a logical test on a row by row basis, based on the shared index of the tables. 
+
+Note, if Table1 is connected to Table2, and Table2 is connected to Table3, all by the same column, then we can use RELATED to refer to Table3 while we are working on Table1. It follows the relationship. 
+
+Note that RELATED can only access a table that is connected via a one-to-one relationship, or a many-to-one relationship.
+If Table1 has a many-to-one relationship to Table4, then RELATED can access Table4. 
+
+###--- using FILTER and RELATED to make a table ---###
+
+FILTER will return a table of results after filtering on some condition. We can combine it with RELATED.
+This let's us filter one table, based on a condition in a column in a related table.  
+
+In the modeling tab, we click on new table, and type this:
+
+NewTable = FILTER(Table1, RELATED(Table2[SomeColumn] = "Deluxe"))
+
+###--- using RELATEDTABLE ---###
+
+This returns a table, so it works differently than RELATED, which returns a scalar for every row. 
+When using RELATEDTABLE, we need to use it within some kind of aggregation function like SUMX.
+
+Column = SUMX(RELATEDTABLE(Table1), Table1[SomeColumn])
+
+RELATEDTABLE let's us access a table that has any connection to the current one.
+It does not have the limitations that RELATED has (requiring a one-to-one or many-to-one relationship only). 
+RELATEDTABLE can even work on a many-to-many relationship. 
+
+###--- CROSSFILTER ---###
+
+Suppose Table1 has a one to many relationship with Table2. The relationship flows from Table1 to Table2.
+If we put a filter on Table1, that context will flow to Table2. If we filter Table2, that will not flow back. 
+
+Suppose Table1 has a one-to-many relationship with Table2 (flowing one way).
+Also, suppose Table3 has a one-to-many relationship with Table2 (flowing one way). 
+
+Now, we want a table that uses the Date column of Table1.
+We will add a column, the sum of sales column for each date, in Table2.
+Lastly, we want the count of rows in Table3 for each date. We make a measure and try to drag it in.
+
+Dragging in that measure in the third step won't work properly. It will just return the count of all rows.
+The filter context isn't flowing through correctly. 
+We are trying to filter based on a dimension in Table1, but that doesn't flow to Table2.
+
+We can fix this by changing the relationship between Table2 and Table3 to be both in our data model. 
+But often, we don't want to alter our data model. CROSSFILTER let's us temporarily change it for calculations. 
+
+So we update our Measure for Table3 to look like this.
+
+Measure = CALCULATE(COUNTROWS(Table3), CROSSFILTER(Table3[Pizza_Code], Table2[Pizza_Sales], Both))
+
+Now it will work. 
+
+
+Measure = 
