@@ -392,6 +392,3 @@ So we update our Measure for Table3 to look like this.
 Measure = CALCULATE(COUNTROWS(Table3), CROSSFILTER(Table3[Pizza_Code], Table2[Pizza_Sales], Both))
 
 Now it will work. 
-
-
-Measure = 
