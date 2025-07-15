@@ -11,7 +11,7 @@ Using the Terminal, we navigate to the folder where the file is stored (using th
 Then, we use the following command. 
 
 ```
-openssl enc -aes-256-cbc -salt -in YourTextFileHere.txt -out YourTextFileHere.txt.enc
+openssl enc -aes-256-cbc -pbkdf2 -salt -in YourFileNameHere.txt -out YourFileNameHere.txt.enc
 ```
 
 This will prompt us for a password. Do not lose it (perhaps store a physical copy of it in a secure on-site location).
@@ -21,7 +21,8 @@ When we want to open the file, we again use the Terminal to navigate to the righ
 Then we use this command.
 
 ```
-openssl enc -d -aes-256-cbc -in YourTextFileHere.txt.enc -out YourTextFileHere.txt
+openssl enc -d -aes-256-cbc -pbkdf2 -in YourFileNameHere.txt.enc -out YourFileNameHere.txt
 ```
 
-This will prompt you for the password. After entering it, the file will be decrypted and will be viewable. 
+This will prompt you for the password. After entering it, the file will be decrypted and will be viewable. You can delete the .txt file when you are done with it. 
+Make sure to keep the txt.enc file. This is what you will use to generate the .txt file (via decryption) when you want to view it. 
