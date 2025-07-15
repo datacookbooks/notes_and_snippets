@@ -37,7 +37,7 @@ To exit, type "q", and you will be returned back to the Terminal.
 
 ### Writing the File to Drive (Not Secure)
 
-If for some reason we would like to create a decrypted txt file by decrypting out txt.enc file, we would use this command. 
+If for some reason we would like to create a decrypted txt file by decrypting our txt.enc file, we would use this command. 
 
 ```
 openssl enc -d -aes-256-cbc -pbkdf2 -in YourFileNameHere.txt.enc -out YourFileNameHere.txt
