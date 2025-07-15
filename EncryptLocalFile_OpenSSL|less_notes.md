@@ -35,7 +35,7 @@ LESSSECURE=1 openssl enc -d -aes-256-cbc -pbkdf2 -in YourFileNameHere.txt.enc | 
 This will prompt you for the password. After entering it, the decrypted file will be viewable. 
 To exit, type "q", and you will be returned back to the Terminal. 
 
-Once you have confirmed you can view the file this way, you can delete the txt file which is not encrypted.
+Once you have confirmed you can view the file this way, you can delete the txt file that is not encrypted.
 
 ### Writing the File to Drive (Not Secure)
 
