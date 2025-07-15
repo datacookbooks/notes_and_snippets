@@ -2,7 +2,7 @@
 
 ### Use Case
 
-We may have a local file that has sensitive information. We want to encrypt it.
+We may have a local file that has sensitive information. We want to encrypt it and be able to view it securely.
 
 ### Encrypting Using OpenSSL
 
