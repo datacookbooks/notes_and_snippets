@@ -16,7 +16,7 @@ Then, we use the following command.
 openssl enc -aes-256-cbc -pbkdf2 -salt -in YourFileNameHere.txt -out YourFileNameHere.txt.enc
 ```
 
-This will prompt us for a password. Do not lose it (perhaps store a physical copy of it in a secure on-site location).
+This will prompt us for a password. Do not lose it. Consider storing a physical copy of it in a secure on-site location.
 
 ### View The File Securely (Without Writing it to Disk)
 
