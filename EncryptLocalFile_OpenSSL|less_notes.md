@@ -4,6 +4,8 @@
 
 We may have a local file that has sensitive information. We want to encrypt it and be able to view it securely.
 
+With this approach, we can only securely view the file. We cannot edit it. To allow editing as well, we need another approach (maybe GPG).
+
 ### Encrypting Using OpenSSL
 
 First, we need to make sure that we save this text file with Unicode UTF-8 encoding. This ensures that the original formatting is preserved when we try to view it securely using "less".
